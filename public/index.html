@@ -755,35 +755,30 @@ function humanUpdate(p,dt){
   p.angle=Math.atan2(n.y,n.x);   // dirección inmediata del joystick
  }else{p.vx*=Math.pow(.04,dt);p.vy*=Math.pow(.04,dt)}
 }
- // En lugar de buscar solo al más cercano, evaluamos una mejor opción defensiva u ofensiva:
-function tickPlayer(p,dt){
+function tickPlayer(p, dt){
+    if (p.user && p.team === userTeam) {
+        let best = null, bestScore = -Infinity;
+        
+        players.forEach(q => {
+            if (q.team === userTeam && q.role !== "GK" && q !== p) {
+                let dBall = dist(q, ball);
+                let score = -dBall; // Base: el más cercano
+                
+                // Si es defensa, le damos preferencia de posicionamiento
+                if (q.role === "DEF") {
+                    score += 40; 
+                }
 
-if (p.user && p.team === userTeam) {
-    let best = null, bestScore = -Infinity;
-    
-    players.forEach(q => {
-        if (q.team === userTeam && q.role !== "GK" && q !== p) {
-            // Calculamos métricas: distancia al balón y posición respecto a la portería rival/propia
-            let dBall = dist(q, ball);
-            
-            // Ejemplo de puntuación: premiar que esté cerca del balón pero también 
-            // que esté bien ubicado (por ejemplo, si defendemos, priorizar menor distancia Y que esté por delante)
-            let score = -dBall; // Base: el más cercano, pero podemos ponderar factores
-            
-            // Si quieres priorizar defensas que estén entre el balón y tu portería:
-            // (puedes ajustar esta fórmula según cómo esté estructurado tu código de coordenadas)
-            if (q.role === "DEF" && ball.x > q.x) { // Asumiendo que defiendes hacia un lado
-                score += 50; // Bonus por estar bien ubicado cubriendo
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = q;
+                }
             }
-
-            if (score > bestScore) {
-                bestScore = score;
-                best = q;
-            }
-        }
-    });
-    if (best) transferCtl(p, best);
+        });
+        if (best) transferCtl(p, best);
+    }
 }
+
 // Acción (pase / filtrado / tiro) de un jugador humano; la ejecuta quien lleva la simulación.
 function doAction(p,type,k,curl){
  if(!p||!running)return;
