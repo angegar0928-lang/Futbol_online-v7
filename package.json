@@ -1,13 +1,8 @@
 {
-  "name": "futbol-2d-online",
+  "name": "futbol-modo-carrera-servidor",
   "version": "1.0.0",
-  "description": "Juego de futbol 2D multijugador online",
+  "description": "Servidor de salas para el Modo Carrera de fútbol",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
-  "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.7.2"
-  }
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ws": "^8.18.0" }
 }
