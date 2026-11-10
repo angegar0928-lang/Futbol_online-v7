@@ -8,37 +8,67 @@ const io = new Server(server);
 
 app.use(express.static('public'));
 
-let players = {};
-let ball = { x: 1500, y: 850, vx: 0, vy: 0 };
+let rooms = {};
 
 io.on('connection', (socket) => {
-    console.log('Jugador conectado:', socket.id);
+    console.log('Usuario conectado:', socket.id);
 
-    players[socket.id] = {
-        id: socket.id,
-        x: Math.random() * 800 + 400,
-        y: Math.random() * 600 + 400,
-        team: Object.keys(players).length % 2 === 0 ? 0 : 1
-    };
+    socket.on('create', (data) => {
+        let code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        rooms[code] = { host: socket.id, players: [{ id: socket.id, name: 'Anfitrión' }] };
+        socket.join(code);
+        socket.emit('created', { id: socket.id, code });
+    });
 
-    socket.emit('init', { id: socket.id, players, ball });
+    socket.on('join', (data) => {
+        let code = data.code ? data.code.toUpperCase() : '';
+        if (rooms[code]) {
+            socket.join(code);
+            rooms[code].players.push({ id: socket.id, name: 'Jugador' });
+            let hostId = rooms[code].host;
+            socket.emit('joined', { id: socket.id, hostId });
+            io.to(hostId).emit('peer_join', { id: socket.id });
+        } else {
+            socket.emit('error', { error: 'NOT_FOUND' });
+        }
+    });
 
-    socket.on('update_pos', (data) => {
-        if (players[socket.id]) {
-            players[socket.id].x = data.x;
-            players[socket.id].y = data.y;
+    socket.on('relay', (data) => {
+        if (data.to === 'host') {
+            for (let code in rooms) {
+                if (rooms[code].host === socket.id || rooms[code].players.some(p => p.id === socket.id)) {
+                    io.to(rooms[code].host).emit('msg', { from: socket.id, data: data.data });
+                    break;
+                }
+            }
+        } else if (data.to === 'all') {
+            for (let code in rooms) {
+                if (rooms[code].host === socket.id || rooms[code].players.some(p => p.id === socket.id)) {
+                    io.to(code).emit('msg', { from: socket.id, data: data.data });
+                    break;
+                }
+            }
+        } else {
+            io.to(data.to).emit('msg', { from: socket.id, data: data.data });
         }
     });
 
     socket.on('disconnect', () => {
-        delete players[socket.id];
-        io.emit('player_left', socket.id);
+        console.log('Usuario desconectado:', socket.id);
+        for (let code in rooms) {
+            if (rooms[code].host === socket.id) {
+                io.to(code).emit('closed', { reason: 'HOST_LEFT' });
+                delete rooms[code];
+            } else {
+                let idx = rooms[code].players.findIndex(p => p.id === socket.id);
+                if (idx !== -1) {
+                    rooms[code].players.splice(idx, 1);
+                    io.to(rooms[code].host).emit('peer_leave', { id: socket.id });
+                }
+            }
+        }
     });
 });
-
-setInterval(() => {
-    io.emit('state', { players, ball });
-}, 1000 / 30);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
