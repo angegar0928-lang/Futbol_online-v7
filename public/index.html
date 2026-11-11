@@ -38,6 +38,25 @@ button{border:0;border-radius:10px;padding:12px 15px;font-weight:bold;font-size:
 #press{background:#d9822bdd}#ask{background:#7b4fc9dd}
 .action{user-select:none;-webkit-user-select:none}
 #shoot.curl{background:#e0a020dd;font-size:12px}
+/* ===== JUEGO HORIZONTAL A PANTALLA COMPLETA ===== */
+@media (orientation:landscape){
+  #stage{width:100vw;height:100dvh;inset:0}
+  #hud{top:max(10px,env(safe-area-inset-top));left:max(12px,env(safe-area-inset-left));transform:scale(1.08);transform-origin:top left}
+  #pause{top:max(10px,env(safe-area-inset-top));right:max(12px,env(safe-area-inset-right));width:46px;height:42px;font-size:19px}
+  #stickArea{left:max(22px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:clamp(112px,25vh,150px);height:clamp(112px,25vh,150px)}
+  #stick{width:clamp(50px,12vh,64px);height:clamp(50px,12vh,64px);left:50%;top:50%;transform:translate(-50%,-50%)}
+  .action{width:clamp(56px,15vh,72px);height:clamp(56px,15vh,72px);font-size:clamp(10px,2.6vh,13px)}
+  #shoot{right:max(22px,env(safe-area-inset-right));bottom:max(20px,env(safe-area-inset-bottom));width:clamp(68px,18vh,88px);height:clamp(68px,18vh,88px);font-size:clamp(12px,3vh,16px)}
+  #pass{right:calc(max(22px,env(safe-area-inset-right)) + clamp(78px,20vh,100px));bottom:max(25px,env(safe-area-inset-bottom));}
+  #through{right:calc(max(22px,env(safe-area-inset-right)) + clamp(38px,10vh,50px));bottom:calc(max(25px,env(safe-area-inset-bottom)) + clamp(76px,19vh,96px));}
+  #press,#ask{right:calc(max(22px,env(safe-area-inset-right)) + clamp(148px,38vh,190px));bottom:max(24px,env(safe-area-inset-bottom));width:clamp(54px,14vh,68px);height:clamp(54px,14vh,68px)}
+  .screen{padding:8px}
+  .panel{max-height:98dvh}
+}
+@media (orientation:portrait){
+  body:after{content:"GIRA EL TELÉFONO PARA JUGAR";position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:#080b10;color:#f7e017;font-weight:900;letter-spacing:1px;font-size:clamp(18px,5vw,26px);text-align:center;padding:24px}
+  #stage{visibility:hidden}
+}
 .big{display:block;width:100%;margin-top:12px;padding:16px;border-radius:14px;font-size:16px;letter-spacing:.5px}
 .white{background:#e8f0f7;color:#2c3340}.green{background:#2c6b52;color:#fff}
 .primary:disabled{opacity:.5}
@@ -390,6 +409,7 @@ function makePlayer(id,t,sp,i,h){
 function beginMatch(humans,role,myPid,stad){
  Net.role=role;Net.myPid=myPid;Net.started=true;
  try{const fs=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();if(fs&&fs.catch)fs.catch(()=>{})}catch(_){}
+ try{if(screen.orientation&&screen.orientation.lock)screen.orientation.lock("landscape").catch(()=>{})}catch(_){}
  document.querySelectorAll(".screen").forEach(e=>e.style.display="none");
  buildHud();document.getElementById("controls").style.display="block";
  document.getElementById("endPanel").style.display="none";
@@ -1614,7 +1634,7 @@ function mpPosConfirm(){$("lbSlot").value=String(mpSel);showScreen("scrLobby");s
 /* ================= MODO CARRERA ================= */
 const Car={on:false,d:null,draft:{slot:10,club:0},offers:[],offer:0};
 const CAR_KEY="futbolCarrera_v1",SEASON_LEN=10,XP_PT=60;
-const CARD_IMGS=["/carrera.jpg","/amistoso.png","/multijugador.png"];   // ← pon aquí la dirección (o data:) de la foto de cada tarjeta: [carrera, amistoso, multijugador]
+const CARD_IMGS=["","",""];   // ← pon aquí la dirección (o data:) de la foto de cada tarjeta: [carrera, amistoso, multijugador]
 function carLoad(){try{const j=localStorage.getItem(CAR_KEY);return j?JSON.parse(j):null}catch(_){return null}}
 function carSave(){try{localStorage.setItem(CAR_KEY,JSON.stringify(Car.d))}catch(_){}}
 function carReset(){if(confirm("¿Borrar tu carrera actual y empezar una nueva?")){try{localStorage.removeItem(CAR_KEY)}catch(_){}Car.d=null;carNew()}}
