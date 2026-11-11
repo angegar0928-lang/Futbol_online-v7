@@ -1634,7 +1634,7 @@ function mpPosConfirm(){$("lbSlot").value=String(mpSel);showScreen("scrLobby");s
 /* ================= MODO CARRERA ================= */
 const Car={on:false,d:null,draft:{slot:10,club:0},offers:[],offer:0};
 const CAR_KEY="futbolCarrera_v1",SEASON_LEN=10,XP_PT=60;
-const CARD_IMGS=["","",""];   // ← pon aquí la dirección (o data:) de la foto de cada tarjeta: [carrera, amistoso, multijugador]
+const CARD_IMGS=["https://futbol-online-v7.onrender.com/carrera.jpg","https://futbol-online-v7.onrender.com/amistoso.png","https://futbol-online-v7.onrender.com/multijugador.png"];   // ← pon aquí la dirección (o data:) de la foto de cada tarjeta: [carrera, amistoso, multijugador]
 function carLoad(){try{const j=localStorage.getItem(CAR_KEY);return j?JSON.parse(j):null}catch(_){return null}}
 function carSave(){try{localStorage.setItem(CAR_KEY,JSON.stringify(Car.d))}catch(_){}}
 function carReset(){if(confirm("¿Borrar tu carrera actual y empezar una nueva?")){try{localStorage.removeItem(CAR_KEY)}catch(_){}Car.d=null;carNew()}}
